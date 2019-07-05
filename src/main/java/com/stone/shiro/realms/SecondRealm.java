@@ -1,8 +1,5 @@
 package com.stone.shiro.realms;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -10,11 +7,8 @@ import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.crypto.hash.SimpleHash;
-import org.apache.shiro.realm.AuthorizingRealm;
-import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.util.ByteSource;
 
 /**
@@ -22,11 +16,11 @@ import org.apache.shiro.util.ByteSource;
  * @date 2019/7/3 21:23
  * description
  */
-public class ShiroRealm extends AuthorizingRealm {
+public class SecondRealm extends AuthenticatingRealm {
 
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-    	System.out.println("[FirstReaml] doGetAuthenticationInfo");
+        System.out.println("[SecondReaml] doGetAuthenticationInfo");
     	
     	// 1.把AuthenticationToken转换为UsernamePasswordToken
     	UsernamePasswordToken upToken = (UsernamePasswordToken) token;
@@ -54,9 +48,9 @@ public class ShiroRealm extends AuthorizingRealm {
     	// 2).credentials：密码
     	Object credentials = null;
     	if ("admin".equals(username)) {
-			credentials = "038bdaf98f2037b31f1e75b5b4c9b26e";
+			credentials = "ce2f6417c7e1d32c1d81a797ee0b499f87c5de06";
 		} else if ("user".equals(username)) {
-			credentials = "098d2c478e9c11555ce2823231e02ec1";
+			credentials = "073d4c3ae812935f23cb3f2a71943f49e082a718";
 		}
     	// 3).realmName：当前realm对象的name，调用父类的getName()方法即可
     	String realmName = getName();
@@ -70,31 +64,11 @@ public class ShiroRealm extends AuthorizingRealm {
     }
     
     public static void main(String[] args) {
-		String hashAlgorithmName = "MD5";
+		String hashAlgorithmName = "SHA1";
 		Object credentials = "123456";
-		Object salt = ByteSource.Util.bytes("user");
+		Object salt = ByteSource.Util.bytes("admin");
 		int hashIterations = 1024;
 		Object result = new SimpleHash(hashAlgorithmName, credentials, salt, hashIterations);
 		System.out.println(result);
-	}
-
-    // 授权会被shiro回调的方法
-	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		// 1.从PrincipalCollection中获取登录用户信息
-		Object principal = principals.getPrimaryPrincipal();
-		
-		// 2.利用登录用户信息来获取当前用户的角色或权限（可能需要查询数据库）
-		Set<String> roles = new HashSet<>();
-		roles.add("user");
-		if ("admin".equals(principal)) {
-			roles.add("admin");
-		}
-		
-		// 3.创建SimpleAuthorizationInfo，并设置reles属性
-		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo(roles);
-		
-		// 4.返回SimpleAuthorizationInfo对象
-		return info;
 	}
 }
